@@ -130,18 +130,15 @@ namespace Hotcakes.Commerce.Payment.Methods
                 {
                     t.Result.ReferenceNumber = captureResponse.DoCaptureResponseDetails.PaymentInfo.TransactionID;
 
-                    if (captureResponse.DoCaptureResponseDetails.PaymentInfo.PaymentStatus ==
-                        PaymentStatusCodeType.Pending)
+                    if (captureResponse.DoCaptureResponseDetails.PaymentInfo.PaymentStatus == PaymentStatusCodeType.Pending || captureResponse.DoCaptureResponseDetails.PaymentInfo.PaymentStatus == PaymentStatusCodeType.CompletedFundsHeld)
                     {
                         t.Result.Succeeded = true;
                         t.Result.ResponseCode = "PENDING";
                         t.Result.ResponseCodeDescription = "PayPal Express Payment PENDING";
-                        t.Result.Messages.Add(new Message("Paypal Express Payment PENDING.", "OK",
-                            MessageType.Information));
+                        t.Result.Messages.Add(new Message("Paypal Express Payment PENDING. (" + captureResponse.DoCaptureResponseDetails.PaymentInfo.PaymentStatus + ")", "OK", MessageType.Information));
                         return true;
                     }
-                    if (captureResponse.DoCaptureResponseDetails.PaymentInfo.PaymentStatus ==
-                        PaymentStatusCodeType.InProgress)
+                    if (captureResponse.DoCaptureResponseDetails.PaymentInfo.PaymentStatus == PaymentStatusCodeType.InProgress)
                     {
                         t.Result.Succeeded = true;
                         t.Result.ResponseCode = "PENDING";
@@ -228,17 +225,16 @@ namespace Hotcakes.Commerce.Payment.Methods
                             MessageType.Information));
                         return true;
                     }
-                    if (paymentInfo.PaymentStatus == PaymentStatusCodeType.Pending)
+                    if (paymentInfo.PaymentStatus == PaymentStatusCodeType.Pending || paymentInfo.PaymentStatus == PaymentStatusCodeType.CompletedFundsHeld)
                     {
                         t.Result.Succeeded = true;
                         t.Result.ResponseCode = "PENDING";
                         t.Result.ResponseCodeDescription = "PayPal Express Payment PENDING";
-                        t.Result.Messages.Add(new Message("Paypal Express Payment PENDING.", "OK",
-                            MessageType.Information));
+                        t.Result.Messages.Add(new Message("Paypal Express Payment PENDING. (" + paymentInfo.PaymentStatus + ")", "OK", MessageType.Information));
                         return true;
                     }
                     t.Result.Succeeded = false;
-                    t.Result.Messages.Add(new Message("An error occurred while trying to charge your PayPal payment.",
+                    t.Result.Messages.Add(new Message("An error occurred while trying to charge your PayPal payment. (" + paymentInfo.PaymentStatus + ")",
                         string.Empty, MessageType.Error));
                     return false;
                 }
