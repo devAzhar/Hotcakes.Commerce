@@ -1410,35 +1410,43 @@ namespace Hotcakes.Commerce.Orders
                 }
             }
 
+            result.Add(new HtmlTemplateTag("[[Order.PublicNotes]]", notes));
+
+            // Customization - Azhar - 2020-04-10 >>
             var orderServices = Factory.CreateService<OrderService>();
             var transactions = orderServices.Transactions
                                     .FindForOrder(this.bvin)
                                     .OrderByDescending(x => x.TimeStampUtc)
                                     .ToList();
-            var orderOnHold = false;
+            var orderCompletedFundsHeld = false;
 
             foreach (var trans in transactions)
             {
                 // messages = messages + "<br/>" + trans.Messages;
                 if (trans.Messages.Contains("CompletedFundsHeld"))
                 {
-                    orderOnHold = true;
+                    orderCompletedFundsHeld = true;
                     break;
                 }
             }
 
-            result.Add(new HtmlTemplateTag("[[Order.PublicNotes]]", notes));
             var messageAdmin = string.Empty;
             var messageUser = string.Empty;
 
-            if (orderOnHold)
+            if (orderCompletedFundsHeld)
             {
                 messageAdmin = "<div style='color: red;'>Payment was put on hold by PayPal. Please double check on the payment processor site before processing the order.</div>";
                 messageUser = "<div style='color: red;'>Payment was set to pending by PayPal, please contact them to confirm your payment.</div>";
             }
+            else if(this.StatusCode.Equals(OrderStatusCode.OnHold))
+            {
+                messageAdmin = "<div style='color: red;'>WARNING!!! This order got a failed transaction from PayPal - please visit paypal site to re-confirm before processing the order.</div>";
+                messageUser = "<div style='color: red;'>WARNING!!! This order got a failed transaction from PayPal, please contact them to confirm your payment.</div>";
+            }
 
             result.Add(new HtmlTemplateTag("[[Order.Messages_Admin]]", messageAdmin));
             result.Add(new HtmlTemplateTag("[[Order.Messages_User]]", messageUser));
+            // Customization - Azhar - 2020-04-10 <<
 
             result.Add(new HtmlTemplateTag("[[Order.ShippingAddress]]", ShippingAddress.ToHtmlString()));
             result.Add(new HtmlTemplateTag("[[Order.BillingAddress]]", ShippingAddress.ToHtmlString()));

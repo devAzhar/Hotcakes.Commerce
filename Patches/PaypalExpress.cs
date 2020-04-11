@@ -212,6 +212,8 @@ namespace Hotcakes.Commerce.Payment.Methods
                     PayPalAPI.GetCurrencyCodeType(app.CurrentStore.Settings.PayPal.Currency),
                     OrderNumber);
 
+                // Customization - Azhar - 2020-04-10 - PaymentStatusCodeType.CompletedFundsHeld
+
                 if (paymentResponse.Ack == AckCodeType.Success || paymentResponse.Ack == AckCodeType.SuccessWithWarning)
                 {
                     var paymentInfo = paymentResponse.DoExpressCheckoutPaymentResponseDetails.PaymentInfo[0];
